@@ -5,6 +5,15 @@ After=network-online.target
 
 [Service]
 Type=simple
+<<<<<<< HEAD
+User=wim
+Group=wim
+# Access to the USB serial port (/dev/ttyUSB*) is granted to the dialout group
+SupplementaryGroups=dialout
+WorkingDirectory=/srv/scripts/otgw2mqtt
+ExecStart=/srv/scripts/otgw2mqtt/.venv/bin/otgw2mqtt
+#EnvironmentFile=-/etc/otgw/env
+=======
 User=otgw2mqtt
 Group=otgw2mqtt
 # Access to the USB serial port (/dev/ttyUSB*) is granted to the dialout group
@@ -14,6 +23,7 @@ WorkingDirectory=/opt/otgw2mqtt
 ExecStart=/opt/otgw2mqtt/.venv/bin/otgw2mqtt --config /etc/otgw2mqtt/otgw2mqtt.yaml
 # OTGW_MQTT_HOST, _USERNAME, _PASSWORD, ... (same format as .env, see .env.example)
 EnvironmentFile=-/etc/otgw2mqtt/env
+>>>>>>> 0632d1e1f32b669edcbd86f254e555be6e2e2ad5
 Restart=on-failure
 RestartSec=10
 
