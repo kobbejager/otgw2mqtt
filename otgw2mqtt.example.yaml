@@ -1,4 +1,4 @@
-# otgw configuration. Every setting is shown with its default.
+# otgw2mqtt configuration. Every setting is shown with its default.
 
 # MQTT connection. host, port, username and password normally come from .env
 # (OTGW_MQTT_HOST, ...); every setting here can be overridden as OTGW_MQTT_<KEY>.
@@ -7,7 +7,7 @@ mqtt:
   client_id: otgw
   keepalive: 60
   qos: 1
-  # password_file: /etc/otgw/mqtt-password   # alternative to OTGW_MQTT_PASSWORD
+  # password_file: /etc/otgw2mqtt/mqtt-password   # alternative to OTGW_MQTT_PASSWORD
 
 gateway:
   # Serial (USB). Prefer the stable name in /dev/serial/by-id/ (ls -l /dev/serial/by-id/).

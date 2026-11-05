@@ -3,14 +3,14 @@
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
-from otgw.config import Config
+from otgw2mqtt.config import Config
 
 try:
-    VERSION = version("otgw")
+    VERSION = version("otgw2mqtt")
 except PackageNotFoundError:  # pragma: no cover - running from a source tree
     VERSION = "dev"
 
-ORIGIN = {"name": "otgw", "sw_version": VERSION}
+ORIGIN = {"name": "otgw2mqtt", "sw_version": VERSION}
 
 # Home Assistant labels, presets and options. The MQTT payloads stay English.
 PRESETS = {"temporary": "Tijdelijk", "constant": "Permanent"}

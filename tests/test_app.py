@@ -3,8 +3,8 @@ import json
 
 from conftest import NEXT, commands, drain, f88, feed, frame, read, write
 
-from otgw.gateway import Commands
-from otgw.protocol import MsgType, Response
+from otgw2mqtt.gateway import Commands
+from otgw2mqtt.protocol import MsgType, Response
 
 
 def test_values_are_published_on_change(app, clock):

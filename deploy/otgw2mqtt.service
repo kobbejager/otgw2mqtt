@@ -1,19 +1,19 @@
 [Unit]
-Description=otgw: OpenTherm Gateway to MQTT
+Description=otgw2mqtt: OpenTherm Gateway to MQTT
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Type=simple
-User=otgw
-Group=otgw
+User=otgw2mqtt
+Group=otgw2mqtt
 # Access to the USB serial port (/dev/ttyUSB*) is granted to the dialout group
 SupplementaryGroups=dialout
-WorkingDirectory=/opt/otgw
-# Expects a virtual environment in /opt/otgw/.venv with otgw installed (see README, "As a systemd service")
-ExecStart=/opt/otgw/.venv/bin/otgw --config /etc/otgw/otgw.yaml
+WorkingDirectory=/opt/otgw2mqtt
+# Expects a virtual environment in /opt/otgw2mqtt/.venv with otgw2mqtt installed (see README, "As a systemd service")
+ExecStart=/opt/otgw2mqtt/.venv/bin/otgw2mqtt --config /etc/otgw2mqtt/otgw2mqtt.yaml
 # OTGW_MQTT_HOST, _USERNAME, _PASSWORD, ... (same format as .env, see .env.example)
-EnvironmentFile=-/etc/otgw/env
+EnvironmentFile=-/etc/otgw2mqtt/env
 Restart=on-failure
 RestartSec=10
 

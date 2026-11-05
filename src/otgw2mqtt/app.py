@@ -10,10 +10,10 @@ from typing import Any
 
 import aiomqtt
 
-from otgw.config import Config
-from otgw.discovery import discovery_messages, object_id_from_topic
-from otgw.gateway import Commands, describe, open_gateway
-from otgw.protocol import (
+from otgw2mqtt.config import Config
+from otgw2mqtt.discovery import discovery_messages, object_id_from_topic
+from otgw2mqtt.gateway import Commands, describe, open_gateway
+from otgw2mqtt.protocol import (
     DHW_MODES,
     KNOWN_IDS,
     VALUE_NAMES,
@@ -27,7 +27,7 @@ from otgw.protocol import (
     parse_response,
 )
 
-log = logging.getLogger("otgw")
+log = logging.getLogger("otgw2mqtt")
 
 RESTORE_TIMEOUT = 5.0
 RECONNECT_DELAY = 5.0
@@ -329,7 +329,7 @@ class App:
             origin = json.loads(payload).get("origin", {}).get("name")
         except (ValueError, AttributeError):
             return
-        if origin == "otgw":  # ours, with an old object_id
+        if origin in ("otgw", "otgw2mqtt"):  # ours (also before the rename), with an old object_id
             self._stale.add(topic)
 
     def publish_all(self) -> None:

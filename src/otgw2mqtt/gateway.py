@@ -7,10 +7,10 @@ from dataclasses import dataclass
 
 import serial_asyncio_fast
 
-from otgw.config import GatewayConfig
-from otgw.protocol import Response
+from otgw2mqtt.config import GatewayConfig
+from otgw2mqtt.protocol import Response
 
-log = logging.getLogger("otgw")
+log = logging.getLogger("otgw2mqtt")
 
 COMMAND_TIMEOUT = 3.0
 COMMAND_ATTEMPTS = 3

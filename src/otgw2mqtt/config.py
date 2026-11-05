@@ -1,4 +1,4 @@
-"""Configuration file (otgw.yaml) loading and validation."""
+"""Configuration file (otgw2mqtt.yaml) loading and validation."""
 
 import os
 import re

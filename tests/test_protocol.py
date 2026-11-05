@@ -1,6 +1,6 @@
 from conftest import f88, frame
 
-from otgw.protocol import (
+from otgw2mqtt.protocol import (
     MsgType,
     Response,
     Transactions,

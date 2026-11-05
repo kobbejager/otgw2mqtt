@@ -9,8 +9,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from otgw.app import App
-from otgw.config import Config, load_config, load_env_file
+from otgw2mqtt.app import App
+from otgw2mqtt.config import Config, load_config, load_env_file
 
 
 async def _run(app: App) -> None:
@@ -38,8 +38,10 @@ async def _monitor(app: App, seconds: float) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(prog="otgw", description="OpenTherm Gateway to MQTT and Home Assistant")
-    parser.add_argument("-c", "--config", default="otgw.yaml", help="configuration file")
+    parser = argparse.ArgumentParser(
+        prog="otgw2mqtt", description="OpenTherm Gateway to MQTT and Home Assistant"
+    )
+    parser.add_argument("-c", "--config", default="otgw2mqtt.yaml", help="configuration file")
     parser.add_argument(
         "--env-file",
         help="file with OTGW_MQTT_* settings (default: .env in the current directory, if present)",

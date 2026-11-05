@@ -1,8 +1,8 @@
 import pytest
 
-from otgw.app import App
-from otgw.config import parse_config
-from otgw.protocol import MsgType
+from otgw2mqtt.app import App
+from otgw2mqtt.config import parse_config
+from otgw2mqtt.protocol import MsgType
 
 CONFIG = """
 mqtt:

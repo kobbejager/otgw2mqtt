@@ -6,7 +6,7 @@ __pycache__
 requirements.txt
 
 # local configuration
-otgw.yaml
+otgw2mqtt.yaml
 config.json
 
 # secrets: MQTT connection settings (see .env.example)

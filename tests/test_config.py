@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from otgw.config import parse_config
+from otgw2mqtt.config import parse_config
 
 
 def test_defaults():

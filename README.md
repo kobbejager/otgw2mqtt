@@ -1,12 +1,12 @@
-# otgw
+# otgw2mqtt
 
-otgw connects an [OpenTherm Gateway][otgw] (Schelte Bron's firmware, for example the NodoShop OTGW) to
+otgw2mqtt connects an [OpenTherm Gateway][otgw] (Schelte Bron's firmware, for example the NodoShop OTGW) to
 MQTT. It publishes what thermostat and boiler tell each other, accepts commands (room temperature
 override, hot water, setpoints), and announces everything to Home Assistant through MQTT discovery.
 
 The gateway is connected over USB serial (default `/dev/ttyUSB0`) or over TCP (ser2net, otmonitor
 relay, ...). Version 1 (JSON configuration, `otgw/value/...` topics) is on the `v1` branch (tag
-`v1-final`).
+`v1-final`). Until version 2 the project was called `otgw`.
 
 [otgw]: https://otgw.tclcode.com/
 
@@ -29,7 +29,7 @@ longer a GitHub fork.
 
 - **The boiler's view.** The gateway reports every OpenTherm frame: the thermostat's request (`T`), the
   request as the gateway passed it on (`R`), the boiler's answer (`B`) and the answer the gateway gave
-  the thermostat instead (`A`). otgw combines the frames of each exchange. For values the thermostat
+  the thermostat instead (`A`). otgw2mqtt combines the frames of each exchange. For values the thermostat
   writes (room temperature, room setpoint, control setpoint) it publishes what the boiler was sent. For
   values it reads, it publishes the gateway's answer if there was one (remote override setpoint, an
   outside temperature set with `OT=`), and otherwise the boiler's. With a control setpoint override
@@ -40,15 +40,15 @@ longer a GitHub fork.
   value is published when it changes, and an unchanged value again after `publish.refresh` seconds
   (default 300), so time series (VictoriaMetrics, Grafana) have no long gaps.
 - **Everything is retained**, so a subscriber that connects gets the latest values immediately.
-- **Override state comes from the gateway.** otgw asks the gateway for the override (`PR=O`) and hot
+- **Override state comes from the gateway.** otgw2mqtt asks the gateway for the override (`PR=O`) and hot
   water setting (`PR=W`) at startup, every `gateway.poll_interval` seconds, and whenever the thermostat
   reads a remote override setpoint that doesn't match. A temporary override ends at the thermostat's next
-  program change without any message; this is how otgw notices. otgw doesn't change or reset an
+  program change without any message; this is how otgw2mqtt notices. otgw2mqtt doesn't change or reset an
   override when it starts or stops (v1 `betterOverride` sent `TT=0` on every MQTT reconnect).
-- **Commands are sent one at a time.** The gateway answers each command. otgw waits for the answer
+- **Commands are sent one at a time.** The gateway answers each command. otgw2mqtt waits for the answer
   (3 seconds, 3 attempts) before sending the next one.
 - **A silent gateway is reported.** When nothing is received for `gateway.timeout` seconds (default 30),
-  otgw publishes `offline` on `<prefix>/availability` and reconnects. Home Assistant then shows the
+  otgw2mqtt publishes `offline` on `<prefix>/availability` and reconnects. Home Assistant then shows the
   entities as unavailable.
 
 ## MQTT topics
@@ -115,14 +115,14 @@ In Home Assistant the gateway is one device:
 
 Entities are available when both `<prefix>/status` and `<prefix>/availability` are `online`.
 
-At startup otgw clears every retained topic under `<prefix>/` that it no longer publishes. This removes
-what version 1 left behind (`otgw/value/...`, retained `otgw/set/...` commands). otgw republishes
+At startup otgw2mqtt clears every retained topic under `<prefix>/` that it no longer publishes. This removes
+what version 1 left behind (`otgw/value/...`, retained `otgw/set/...` commands). otgw2mqtt republishes
 discovery when Home Assistant restarts (`homeassistant/status` = `online`).
 
 ## Installation
 
-otgw is a normal Python package (Python ≥ 3.12). Installing it into a virtual environment gives you an
-`otgw` command at `.venv/bin/otgw`. Its dependencies are `aiomqtt`, `pyserial-asyncio-fast`,
+otgw2mqtt is a normal Python package (Python ≥ 3.12). Installing it into a virtual environment gives you an
+`otgw2mqtt` command at `.venv/bin/otgw2mqtt`. Its dependencies are `aiomqtt`, `pyserial-asyncio-fast`,
 `pydantic` and `PyYAML`.
 
 The exact dependency versions that were tested are pinned in `uv.lock`. Option A uses that file
@@ -132,9 +132,9 @@ you may get newer releases.
 ### Option A: `uv venv` + `uv pip` (classic workflow)
 
 ```sh
-cd otgw
+cd otgw2mqtt
 uv venv                          # creates .venv/
-uv pip install -e .              # installs otgw (editable) and its dependencies
+uv pip install -e .              # installs otgw2mqtt (editable) and its dependencies
 uv pip install --group dev       # optional: pytest and ruff, for development
 ```
 
@@ -149,11 +149,11 @@ uv pip install --no-deps .
 ### Option B: `uv sync` (project workflow)
 
 ```sh
-cd otgw
+cd otgw2mqtt
 uv sync                          # add --no-dev on a production machine
 ```
 
-The rest of this README writes plain `otgw ...`. Activate `.venv` first, or put `.venv/bin/` or
+The rest of this README writes plain `otgw2mqtt ...`. Activate `.venv` first, or put `.venv/bin/` or
 `uv run` in front.
 
 If the system Python is older than 3.12 (Raspberry Pi OS Bullseye has 3.9), uv downloads a suitable
@@ -161,12 +161,12 @@ Python for the virtual environment by itself.
 
 ## Configuration
 
-See [`otgw.example.yaml`](otgw.example.yaml) for every option. Without a configuration file every
+See [`otgw2mqtt.example.yaml`](otgw2mqtt.example.yaml) for every option. Without a configuration file every
 default applies: serial on `/dev/ttyUSB0`, prefix `otgw`.
 
 ### MQTT connection: `.env`
 
-The broker host, port, username and password are not in `otgw.yaml`. They come from environment
+The broker host, port, username and password are not in `otgw2mqtt.yaml`. They come from environment
 variables, normally kept in a `.env` file. `.env` is in `.gitignore`, so it is never committed.
 
 ```sh
@@ -175,20 +175,20 @@ chmod 600 .env
 $EDITOR .env                                 # fill in OTGW_MQTT_HOST, _USERNAME, _PASSWORD
 ```
 
-- **Where it looks:** otgw reads `.env` from the current directory. Use `--env-file PATH` to read
+- **Where it looks:** otgw2mqtt reads `.env` from the current directory. Use `--env-file PATH` to read
   another file.
 - **Precedence:** a variable that is already set in the environment wins over the same one in the file.
 - **Which settings:** every `mqtt:` setting can be set as `OTGW_MQTT_<KEY>`, and that overrides
-  `otgw.yaml`.
+  `otgw2mqtt.yaml`.
 - **Format:** plain `KEY=value` lines, the same format systemd's `EnvironmentFile=` uses.
 
 ### Checking the gateway and the configuration
 
 ```sh
 ls -l /dev/serial/by-id/                     # the stable name of the USB serial adapter
-otgw -c otgw.yaml --monitor                  # print what the gateway reports for 60 seconds; or --monitor 300
-otgw -c otgw.yaml --check-config             # validate the configuration
-otgw -c otgw.yaml --dump-discovery           # print what Home Assistant will receive
+otgw2mqtt -c otgw2mqtt.yaml --monitor                  # print what the gateway reports for 60 seconds; or --monitor 300
+otgw2mqtt -c otgw2mqtt.yaml --check-config             # validate the configuration
+otgw2mqtt -c otgw2mqtt.yaml --dump-discovery           # print what Home Assistant will receive
 ```
 
 `--monitor` doesn't need MQTT. It only reads (and asks for the override and hot water state). The
@@ -197,62 +197,62 @@ gateway accepts one serial connection, so stop the running service first.
 ## Running
 
 ```sh
-otgw -c otgw.yaml                            # reads .env; add --log-level DEBUG to see every gateway line
+otgw2mqtt -c otgw2mqtt.yaml                            # reads .env; add --log-level DEBUG to see every gateway line
 ```
 
-Stop it with Ctrl+C. otgw publishes `offline` on `<prefix>/status` before exiting.
+Stop it with Ctrl+C. otgw2mqtt publishes `offline` on `<prefix>/status` before exiting.
 
 ### As a systemd service
 
-The unit file [`deploy/otgw.service`](deploy/otgw.service) expects:
+The unit file [`deploy/otgw2mqtt.service`](deploy/otgw2mqtt.service) expects:
 
 | what                         | where                      |
 |------------------------------|----------------------------|
-| the code and its `.venv/`    | `/opt/otgw`                |
-| the configuration            | `/etc/otgw/otgw.yaml`      |
-| the MQTT settings (`.env`)   | `/etc/otgw/env`            |
-| the service account          | user `otgw`, also in group `dialout` |
+| the code and its `.venv/`    | `/opt/otgw2mqtt`                |
+| the configuration            | `/etc/otgw2mqtt/otgw2mqtt.yaml`      |
+| the MQTT settings (`.env`)   | `/etc/otgw2mqtt/env`            |
+| the service account          | user `otgw2mqtt`, also in group `dialout` |
 
 The `dialout` group gives access to `/dev/ttyUSB*`. Every step:
 
 ```sh
 # 1. service account and code
-sudo useradd --system --home-dir /opt/otgw --shell /usr/sbin/nologin --groups dialout otgw
-sudo git clone <repo-url> /opt/otgw
-sudo chown -R otgw: /opt/otgw
+sudo useradd --system --home-dir /opt/otgw2mqtt --shell /usr/sbin/nologin --groups dialout otgw2mqtt
+sudo git clone <repo-url> /opt/otgw2mqtt
+sudo chown -R otgw2mqtt: /opt/otgw2mqtt
 
-# 2. virtual environment, as the otgw user (option A shown; option B: uv sync --frozen --no-dev)
-cd /opt/otgw
-sudo -u otgw uv venv
-sudo -u otgw uv export --frozen --no-dev --no-emit-project -o requirements.txt
-sudo -u otgw uv pip install -r requirements.txt
-sudo -u otgw uv pip install --no-deps .
-sudo -u otgw /opt/otgw/.venv/bin/otgw --monitor 30   # check: serial access and data
+# 2. virtual environment, as the otgw2mqtt user (option A shown; option B: uv sync --frozen --no-dev)
+cd /opt/otgw2mqtt
+sudo -u otgw2mqtt uv venv
+sudo -u otgw2mqtt uv export --frozen --no-dev --no-emit-project -o requirements.txt
+sudo -u otgw2mqtt uv pip install -r requirements.txt
+sudo -u otgw2mqtt uv pip install --no-deps .
+sudo -u otgw2mqtt /opt/otgw2mqtt/.venv/bin/otgw2mqtt --monitor 30   # check: serial access and data
 
 # 3. configuration and MQTT settings
-sudo install -d /etc/otgw
-sudo cp otgw.example.yaml /etc/otgw/otgw.yaml
-sudoedit /etc/otgw/otgw.yaml                       # gateway.device: /dev/serial/by-id/...
-sudo install -m 600 .env.example /etc/otgw/env
-sudoedit /etc/otgw/env                             # fill in host, username, password
-sudo /opt/otgw/.venv/bin/otgw -c /etc/otgw/otgw.yaml --env-file /etc/otgw/env --check-config
+sudo install -d /etc/otgw2mqtt
+sudo cp otgw2mqtt.example.yaml /etc/otgw2mqtt/otgw2mqtt.yaml
+sudoedit /etc/otgw2mqtt/otgw2mqtt.yaml                       # gateway.device: /dev/serial/by-id/...
+sudo install -m 600 .env.example /etc/otgw2mqtt/env
+sudoedit /etc/otgw2mqtt/env                             # fill in host, username, password
+sudo /opt/otgw2mqtt/.venv/bin/otgw2mqtt -c /etc/otgw2mqtt/otgw2mqtt.yaml --env-file /etc/otgw2mqtt/env --check-config
 
 # 4. service
-sudo cp deploy/otgw.service /etc/systemd/system/
+sudo cp deploy/otgw2mqtt.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now otgw
-journalctl -u otgw -f                              # follow the log
+sudo systemctl enable --now otgw2mqtt
+journalctl -u otgw2mqtt -f                              # follow the log
 ```
 
-`uv` must be usable by the `otgw` user. If it's installed in your home directory (`~/.local/bin/uv`),
+`uv` must be usable by the `otgw2mqtt` user. If it's installed in your home directory (`~/.local/bin/uv`),
 call it by full path or install it system-wide.
 
 To update:
 
 ```sh
-cd /opt/otgw && sudo -u otgw git pull
-sudo -u otgw uv pip install --no-deps .            # option B: sudo -u otgw uv sync --frozen --no-dev
-sudo systemctl restart otgw
+cd /opt/otgw2mqtt && sudo -u otgw2mqtt git pull
+sudo -u otgw2mqtt uv pip install --no-deps .            # option B: sudo -u otgw2mqtt uv sync --frozen --no-dev
+sudo systemctl restart otgw2mqtt
 ```
 
 If `uv.lock` changed, first rerun the `uv export` and `uv pip install -r requirements.txt` lines from
@@ -262,9 +262,9 @@ step 2.
 
 v1 and v2 can't run side by side: the gateway accepts only one serial connection.
 
-1. Stop and disable v1 (`sudo systemctl disable --now otgw`; v1 ran as root from `/opt/otgw`). Move
-   its directory aside before cloning v2 there.
-2. Check v2 on the gateway: `otgw --monitor`.
+1. Stop and disable v1 (`sudo systemctl disable --now otgw`; v1 ran as root from `/opt/otgw2mqtt`). v2
+   installs into `/opt/otgw2mqtt`, so the v1 directory can stay until you remove it.
+2. Check v2 on the gateway: `otgw2mqtt --monitor`.
 3. Start v2. It clears the retained v1 topics under `otgw/`.
 4. Update everything that used the v1 topics:
 
